@@ -22,11 +22,11 @@ resource "google_container_cluster" "harbor" {
 resource "google_container_node_pool" "harbor_nodes" {
   name       = "${var.cluster-name}-pool"
   cluster    = "${google_container_cluster.harbor.name}"
-  node_count = 1
+  node_count = 3
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-1"
+    machine_type = "n1-standard-2"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
