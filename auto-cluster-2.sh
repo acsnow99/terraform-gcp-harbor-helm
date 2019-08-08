@@ -1,6 +1,6 @@
 yes yes | terraform apply
 
-clustername=$(terraform output | sed 's/cluster-name = //')
+clustername="$(terraform output | sed 's/cluster-name = //')"
 
 curl -LO https://git.io/get_helm.sh
 chmod 700 get_helm.sh
@@ -16,7 +16,7 @@ sleep 60
 
 helm install --name ingress stable/nginx-ingress
 sleep 30
-ip=(kubectl get svc ingress-nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+ip="$(kubectl get svc ingress-nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
 # put the IP addr into /etc/hosts as core.harbor.domain
 sudo cp /etc/hosts ./hosts-copy
 sudo echo "$ip core.harbor.domain" >> /etc/hosts
