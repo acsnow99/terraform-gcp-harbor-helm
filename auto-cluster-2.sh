@@ -33,6 +33,7 @@ helm install --name harbor-release harbor/harbor --set nginx.image.tag=v1.8.1 --
   --set clair.image.tag=v2.0.8-v1.8.1 --set notary.server.image.tag=v0.6.1-v1.8.1 --set notary.signer.image.tag=v0.6.1-v1.8.1 \
   --set database.internal.image.tag=v1.8.1 --set redis.internal.image.tag=v1.8.1 --set registry.registry.image.tag=v2.7.1-patch-2819-v1.8.1 \
   --set registry.controller.image.tag=v1.8.1
+sleep 180
 # access online portal, download cert, and put it into keychain(or possibly the Docker certs.d directory; will be tested)
 curl -o ca.crt https://core.harbor.domain/api/systeminfo/getcert
 sudo security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain-db ca.crt
