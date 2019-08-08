@@ -1,3 +1,4 @@
 *.tfstate*
 .terraform
 hosts-copy
+auto-cluster-snippet.sh

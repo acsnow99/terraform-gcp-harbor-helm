@@ -15,7 +15,7 @@ helm init --service-account tiller --upgrade
 sleep 60
 
 helm install --name ingress stable/nginx-ingress
-sleep 30
+sleep 60
 ip="$(kubectl get svc ingress-nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
 # put the IP addr into /etc/hosts as core.harbor.domain
 sudo cp /etc/hosts ./hosts-copy
