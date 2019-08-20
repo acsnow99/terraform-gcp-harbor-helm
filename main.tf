@@ -9,6 +9,8 @@ resource "google_container_cluster" "harbor" {
     name = "${var.cluster-name}"
     initial_node_count = 3
     remove_default_node_pool = true
+    network = "terraform-gcp-harbor"
+    subnetwork = "harbor-repo-0"
 
     master_auth {
         username = ""
@@ -26,7 +28,7 @@ resource "google_container_node_pool" "harbor_nodes" {
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-2"
+    machine_type = "n1-standard-1"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",

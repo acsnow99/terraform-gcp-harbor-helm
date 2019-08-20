@@ -2,3 +2,4 @@
 .terraform
 hosts-copy
 auto-cluster-snippet.sh
+examples
