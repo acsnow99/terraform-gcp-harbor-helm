@@ -1,0 +1,39 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mc-server-pod-doingus
+  labels: 
+    app: minecraft
+    world: doingus
+spec:
+  volumes:
+    - name: mc-world-storage
+      persistentVolumeClaim:
+       claimName: mc-claim
+  containers:
+    - name: mc-server-container
+      image: alexcraigs/k8s-minecraft:doingus
+      ports:
+        - containerPort: 19132
+          name: "mc-server"
+      volumeMounts:
+        - mountPath: "/worlds-backup"
+          name: mc-world-storage
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mc-exposer-doingus
+  labels:
+    app: minecraft
+    world: doingus
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: UDP
+      port: 19132
+      targetPort: 19132
+  selector: 
+    world: doingus

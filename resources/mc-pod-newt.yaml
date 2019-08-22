@@ -1,0 +1,41 @@
+#example deployment for minecraft server
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mc-server-pod-newt
+  labels: 
+    app: minecraft
+    world: newt
+spec:
+  volumes:
+    - name: mc-world-storage
+      persistentVolumeClaim:
+       claimName: mc-claim
+  containers:
+    - name: mc-server-container
+      image: alexcraigs/k8s-minecraft:newt
+      ports:
+        - containerPort: 19132
+          name: "mc-server"
+      volumeMounts:
+        - mountPath: "/minecraft/worlds"
+          name: mc-world-storage
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mc-exposer-newt
+  labels:
+    app: minecraft
+    world: newt
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: UDP
+      port: 19132
+      targetPort: 19132
+  selector: 
+    world: newt

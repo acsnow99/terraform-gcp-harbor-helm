@@ -9,8 +9,8 @@ resource "google_container_cluster" "harbor" {
     name = "${var.cluster-name}"
     initial_node_count = 3
     remove_default_node_pool = true
-    network = "terraform-gcp-harbor"
-    subnetwork = "harbor-repo-0"
+    network = "${var.network}"
+    subnetwork = "${var.subnet}"
 
     master_auth {
         username = ""
@@ -24,7 +24,7 @@ resource "google_container_cluster" "harbor" {
 resource "google_container_node_pool" "harbor_nodes" {
   name       = "${var.cluster-name}-pool"
   cluster    = "${google_container_cluster.harbor.name}"
-  node_count = 3
+  node_count = "${var.cluster-size}"
 
   node_config {
     preemptible  = true
