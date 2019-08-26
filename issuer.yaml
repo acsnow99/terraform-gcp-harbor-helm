@@ -1,0 +1,29 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  # This issuer has low thresholds for rate limits,
+  # so only use once bugs have been worked out for ingress stanzas
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: asnow@ignw.io
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    # Enable the HTTP-01 challenge provider
+    http01: {}
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  # This issuer will not give trusted certificates, but has high rate limits
+  # so can be used for testing initial certificate generation
+  name: letsencrypt-stage
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: asnow@ignw.io
+    privateKeySecretRef:
+      name: letsencrypt-stage
+    # Enable the HTTP-01 challenge provider
+    http01: {}

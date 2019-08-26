@@ -40,7 +40,7 @@ texturepack-required=false" > /minecraft/server.properties \
   && echo "while true\n\
 do\n\
   cp -r /minecraft/worlds/'"$WORLDNAME"'/db/* /worlds-backup/'"$WORLDNAME"'\n\
-  sleep 180\n\
+  sleep 120\n\
 done" > /auto-backup.sh \
   && mkdir /worlds-backup \
   && mkdir /worlds-backup/'"$WORLDNAME"'

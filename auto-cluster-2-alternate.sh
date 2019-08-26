@@ -1,3 +1,5 @@
+#make sure to run with sudo
+
 yes yes | terraform apply -var-file=states/alternate.tfvars
 
 clustername="$(terraform output | sed 's/cluster-name = //')"

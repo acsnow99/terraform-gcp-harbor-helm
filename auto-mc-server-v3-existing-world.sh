@@ -35,25 +35,20 @@ level-name='"$WORLDNAME"'\n\
 level-seed=\n\
 default-player-permission-level=operator\n\
 texturepack-required=false" > /minecraft/server.properties \
-  && touch /auto-backup.sh \
-  && echo "while true\n\
-do\n\
-  cp -r /minecraft/worlds/'"$WORLDNAME"'/db/* /worlds-backup/'"$WORLDNAME"'\n\
-  sleep 120\n\
-done" > /auto-backup.sh \
-  && mkdir /worlds-backup
+  && mkdir /world-backup \
+  && mkdir /world-backup/'"$WORLDNAME"'
+
+COPY '"$WORLDNAME"'/db /world-backup/'"$WORLDNAME"'
 
 ENV LD_LIBRARY_PATH /minecraft
 
-CMD mkdir /worlds-backup/'"$WORLDNAME"' && chmod 700 /auto-backup.sh && /bin/bash /auto-backup.sh && cd /minecraft && ./bedrock_server' > ./k8s-minecraft-image/Dockerfile
-# tail -f /dev/null
-# /auto-backup.sh && cd /minecraft && /minecraft/bedrock_server
+CMD mkdir /minecraft/worlds/'"$WORLDNAME"' && mkdir /minecraft/worlds/'"$WORLDNAME"'/db && cp -r /world-backup/'"$WORLDNAME"'/* /minecraft/worlds/'"$WORLDNAME"'/db && cd minecraft && /minecraft/bedrock_server' > ./k8s-minecraft-image/Dockerfile
 
 #This command keeps the container running
 #CMD tail -f /dev/null 
 
-sudo docker build --no-cache -t alexcraigs/k8s-minecraft-new-world:"${worldname}" ./k8s-minecraft-image
-sudo docker push alexcraigs/k8s-minecraft-new-world:"${worldname}"
+sudo docker build -t alexcraigs/k8s-minecraft-from-file:"${worldname}" ./k8s-minecraft-image
+sudo docker push alexcraigs/k8s-minecraft-from-file:"${worldname}"
 
 echo 'kind: Pod
 apiVersion: v1
@@ -69,12 +64,12 @@ spec:
        claimName: mc-claim
   containers:
     - name: mc-server-container
-      image: alexcraigs/k8s-minecraft-new-world:'"${worldname}"'
+      image: alexcraigs/k8s-minecraft-from-file:'"${worldname}"'
       ports:
         - containerPort: 19132
           name: "mc-server"
       volumeMounts:
-        - mountPath: "/worlds-backup"
+        - mountPath: "/minecraft/worlds"
           name: mc-world-storage
 
 ---
@@ -88,6 +83,7 @@ metadata:
     world: '"${worldname}"'
 spec:
   type: LoadBalancer
+
   ports:
     - protocol: UDP
       port: 19132

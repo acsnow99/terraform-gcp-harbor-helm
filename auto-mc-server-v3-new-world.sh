@@ -34,25 +34,18 @@ max-threads=8\n\
 level-name='"$WORLDNAME"'\n\
 level-seed=\n\
 default-player-permission-level=operator\n\
-texturepack-required=false" > /minecraft/server.properties \
-  && touch /auto-backup.sh \
-  && echo "while true\n\
-do\n\
-  cp -r /minecraft/worlds/'"$WORLDNAME"'/db/* /worlds-backup/'"$WORLDNAME"'\n\
-  sleep 120\n\
-done" > /auto-backup.sh \
-  && mkdir /worlds-backup
+texturepack-required=false" > /minecraft/server.properties
 
 ENV LD_LIBRARY_PATH /minecraft
 
-CMD mkdir /worlds-backup/'"$WORLDNAME"' && chmod 700 /auto-backup.sh && /bin/bash /auto-backup.sh && cd /minecraft && ./bedrock_server' > ./k8s-minecraft-image/Dockerfile
+CMD cd /minecraft && /minecraft/bedrock_server' > ./k8s-minecraft-image/Dockerfile
 # tail -f /dev/null
 # /auto-backup.sh && cd /minecraft && /minecraft/bedrock_server
 
 #This command keeps the container running
 #CMD tail -f /dev/null 
 
-sudo docker build --no-cache -t alexcraigs/k8s-minecraft-new-world:"${worldname}" ./k8s-minecraft-image
+sudo docker build -t alexcraigs/k8s-minecraft-new-world:"${worldname}" ./k8s-minecraft-image
 sudo docker push alexcraigs/k8s-minecraft-new-world:"${worldname}"
 
 echo 'kind: Pod
@@ -74,7 +67,7 @@ spec:
         - containerPort: 19132
           name: "mc-server"
       volumeMounts:
-        - mountPath: "/worlds-backup"
+        - mountPath: "/minecraft/worlds"
           name: mc-world-storage
 
 ---
@@ -88,6 +81,7 @@ metadata:
     world: '"${worldname}"'
 spec:
   type: LoadBalancer
+  
   ports:
     - protocol: UDP
       port: 19132
