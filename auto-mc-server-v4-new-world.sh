@@ -4,6 +4,16 @@
 # and "export GAMEMODE=<survival or creative>" 
 # before running script
 
+# if using a private, untrusted registry, such as Harbor,
+# to get the nodes to trust harbor, run:
+# gcloud beta compute --project "terraform-gcp-harbor" ssh --zone "us-west1-a" "gke-harbor-kube-harbor-kube-pool-${number of the node}"
+# cd /etc/docker
+# sudo mkdir certs.d
+# sudo mkdir certs.d/core.harbor.domain
+# cd certs.d/core.harbor.domain
+# curl -k -o ca.crt https://core.harbor.domain/api/systeminfo/getcert
+# exit
+
 yes yes | terraform apply -var-file=states/minecraft.tfvars
 clustername="$(terraform output | sed 's/cluster-name = //')"
 gcloud container clusters get-credentials $clustername --zone us-west1-a --project terraform-gcp-harbor

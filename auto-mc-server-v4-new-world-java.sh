@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run "export WORLDNAME=<the name of the new world or existing world files in k8s-minecraft-image directory>" 
-# and "export GAMEMODE=<survival or creative>" 
+# and "export GAMEMODE=<0 for survival or 1 for creative>" 
 # before running script
 
 yes yes | terraform apply -var-file=states/minecraft.tfvars
@@ -16,7 +16,7 @@ query.port=25565
 generator-settings=
 force-gamemode=false
 allow-nether=true
-gamemode=0
+gamemode="$GAMEMODE"
 enable-query=false
 player-idle-timeout=0
 difficulty=1
@@ -37,7 +37,7 @@ texture-pack=
 server-ip=
 spawn-npcs=true
 allow-flight=false
-level-name='"$WORLDNAME"'
+level-name="$WORLDNAME"
 view-distance=10
 displayname=Fill this in if you have set the server to public\!
 resource-pack=
@@ -51,7 +51,7 @@ max-build-height=256
 level-seed=
 use-native-transport=true
 prevent-proxy-connections=false
-motd=A Ftb Minecraft Server powered by Docker
+motd=A Minecraft Server powered by K8S
 enable-rcon=true" > resources/java.server.properties
 
 echo 'kind: Pod
@@ -78,11 +78,7 @@ spec:
       - name: EULA
         value: "true"
       - name: VERSION 
-        value: "1.12.2"
-      - name: TYPE
-        value: "FTB"
-      - name: FTB_SERVER_MOD
-        value: "https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320/download"
+        value: "'$VERSION'"
 
 ---
 
@@ -99,26 +95,20 @@ spec:
       port: 25565
       targetPort: 25565
   selector: 
-    app: java
-    
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mc-claim-java
-spec:
-  accessModes:
-    - ReadWriteOnce
-  volumeMode: Filesystem
-  resources:
-    requests:
-      storage: 5G' > ./resources/mc-pod-java-"${worldname}".yaml
+    app: java' > ./resources/mc-pod-java.yaml
 
-kubectl apply -f ./resources/pvc.yaml
-kubectl apply -f ./resources/mc-pod-java-"${worldname}".yaml
+kubectl apply -f ./resources/mc-pod-java.yaml
+kubectl apply -f ./resources/pvc-java.yaml
 
-sleep 120
+sleep 90
 
-kubectl cp resources/java.server.properties mc-server-pod-${worldname}:/data/FeedTheBeast/server.properties
-kubectl cp resources/server_setup.sh mc-server-pod-${worldname}:/server_setup.sh
+kubectl cp resources/java.server.properties mc-server-pod-java:/data/server.properties
+kubectl exec mc-server-pod-java chmod 777 server.properties
+kubectl exec mc-server-pod-java rcon-cli stop
 
-kubectl exec mc-server-pod-${worldname} bash /server_setup.sh
+
+#Add this to the end of the YAML echo command for the Feed the Beast Direwolf mod pack
+#      - name: TYPE
+#        value: "FTB"
+#      - name: FTB_SERVER_MOD
+#        value: "https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320/download"
