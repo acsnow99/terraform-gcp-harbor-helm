@@ -175,7 +175,7 @@ spec:
     kubectl apply -f ./resources/mc-pod-java.yaml
     kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
-    sleep 90
+    sleep 180
 
     kubectl cp $modpath mc-server-pod-java:/data/mods/
     kubectl cp resources/java.server.properties mc-server-pod-java:/data/server.properties
@@ -298,7 +298,7 @@ spec:
     kubectl apply -f ./resources/mc-pod-java.yaml
     kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
-    sleep 300
+    sleep 330
 
     kubectl cp resources/java.server.properties mc-server-pod-java:/data/FeedTheBeast/server.properties
     kubectl exec mc-server-pod-java chmod 777 /data/FeedTheBeast/server.properties
@@ -417,7 +417,7 @@ spec:
       kubectl apply -f ./resources/mc-pod-java.yaml
       kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
-      sleep 90
+      sleep 150
 
       kubectl cp resources/java.server.properties mc-server-pod-java:/data/server.properties
       kubectl exec mc-server-pod-java chmod 777 server.properties

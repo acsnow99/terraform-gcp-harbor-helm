@@ -8,7 +8,7 @@ spec:
   volumes:
     - name: mc-world-storage-java
       persistentVolumeClaim:
-       claimName: mc-claim-java
+        claimName: mc-claim-java
   containers:
     - name: mc-server-container-java
       image: itzg/minecraft-server
@@ -22,11 +22,7 @@ spec:
       - name: EULA
         value: "true"
       - name: VERSION 
-        value: "1.12.2"
-      - name: TYPE
-        value: "FTB"
-      - name: FTB_SERVER_MOD
-        value: https://www.feed-the-beast.com/projects/ftb-ultimate-reloaded/files/2746974
+        value: "1.14.4"
 
 ---
 
