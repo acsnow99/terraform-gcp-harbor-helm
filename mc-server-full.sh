@@ -20,7 +20,7 @@ while getopts ":hg:w:v:m:f:b" opt; do
 -b Creates a Biomes 'O' Plenty world if -m is also called and the modpath points to the Biomes 'O' Plenty mod file
 -f Activates FTB; URL or path of modpack required
 Note: Make sure the modpacks and mods match the version of Minecraft under the -v flag
-Other Note: Use either -m or -f, not both at once" 1>&2
+Other Note: Using both -m and -f will only activate -m" 1>&2
      exit 1
      ;;
    g )
@@ -53,7 +53,7 @@ Usage:
 -b Creates a Biomes 'O' Plenty world if -m is also called and the modpath points to the Biomes 'O' Plenty mod file
 -f Activates FTB; URL or path of modpack required
 Note: Make sure the modpacks and mods match the version of Minecraft under the -v flag
-Other Note: Use either -m or -f, not both at once" 1>&2
+Other Note: Using both -m and -f will only activate -m" 1>&2
      exit 1
      ;;
    : )
@@ -151,7 +151,7 @@ spec:
       - name: EULA
         value: "true"
       - name: VERSION 
-        value: "1.12.2"
+        value: "'${version}'"
       - name: TYPE
         value: "FORGE"
 
@@ -185,6 +185,7 @@ spec:
     echo "Creation complete, please wait for the server to configure.
 Server IP Address: "
     kubectl get svc mc-exposer-java -o jsonpath="{.status.loadBalancer.ingress[*].ip}"
+    echo ""
 
 
 
@@ -217,7 +218,7 @@ announce-player-achievements=true
 server-port=25565
 rcon.port=25575
 query.port=25565
-level-type=DEFAULT
+level-type="${worldtype}"
 enable-rcon=true
 force-gamemode=false
 level-seed=
@@ -271,7 +272,7 @@ spec:
       - name: EULA
         value: "true"
       - name: VERSION 
-        value: "1.12.2"
+        value: "'${version}'"
       - name: TYPE
         value: "FTB"
       - name: FTB_SERVER_MOD
@@ -297,7 +298,7 @@ spec:
     kubectl apply -f ./resources/mc-pod-java.yaml
     kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
-    sleep 240
+    sleep 300
 
     kubectl cp resources/java.server.properties mc-server-pod-java:/data/FeedTheBeast/server.properties
     kubectl exec mc-server-pod-java chmod 777 /data/FeedTheBeast/server.properties
@@ -306,6 +307,7 @@ spec:
     echo "Creation complete, please wait for the server to configure.
 Server IP Address: "
     kubectl get svc mc-exposer-java -o jsonpath="{.status.loadBalancer.ingress[*].ip}"
+    echo ""
 
 
 
@@ -339,7 +341,7 @@ spawn-monsters=true
 op-permission-level=4
 pvp=true
 snooper-enabled=true
-level-type=DEFAULT
+level-type="${worldtype}"
 hardcore=false
 enable-command-block=true
 network-compression-threshold=256
@@ -424,6 +426,7 @@ spec:
       echo "Creation complete, please wait for the server to configure.
 Server IP Address: "
       kubectl get svc mc-exposer-java -o jsonpath="{.status.loadBalancer.ingress[*].ip}"
+      echo ""
 
 
 

@@ -24,7 +24,9 @@ spec:
       - name: VERSION 
         value: "1.12.2"
       - name: TYPE
-        value: "FORGE"
+        value: "FTB"
+      - name: FTB_SERVER_MOD
+        value: https://www.feed-the-beast.com/projects/ftb-ultimate-reloaded/files/2746974
 
 ---
 
