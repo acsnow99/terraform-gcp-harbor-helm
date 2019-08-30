@@ -1,3 +1,0 @@
-Updating Homebrew...
-[31mError:[0m terraform 0.12.2 is already installed
-To upgrade to 0.12.7, run `brew upgrade terraform`.

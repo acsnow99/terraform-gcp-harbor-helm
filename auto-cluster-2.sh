@@ -128,7 +128,7 @@ helm install --name cert-manager --namespace cert-manager --version v0.8.1 jetst
 
 #start Harbor on the cluster
 helm repo add harbor https://helm.goharbor.io
-helm install --name harbor-release harbor/harbor --set expose.ingress.core=$url --set externalURL=https://$url --set nginx.image.tag=v1.8.1 --set portal.image.tag=v1.8.1 \
+helm install --name harbor-release harbor/harbor --set expose.ingress.hosts.core=$url --set externalURL=https://$url --set nginx.image.tag=v1.8.1 --set portal.image.tag=v1.8.1 \
   --set core.image.tag=v1.8.1 --set jobservice.image.tag=v1.8.1 --set chartmuseum.image.tag=v0.8.1-v1.8.1 \
   --set clair.image.tag=v2.0.8-v1.8.1 --set notary.server.image.tag=v0.6.1-v1.8.1 --set notary.signer.image.tag=v0.6.1-v1.8.1 \
   --set database.internal.image.tag=v1.8.1 --set redis.internal.image.tag=v1.8.1 --set registry.registry.image.tag=v2.7.1-patch-2819-v1.8.1 \
