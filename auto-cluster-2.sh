@@ -1,6 +1,96 @@
-#make sure to run with sudo
+#run with -h flag to get info on this script
 
-yes yes | terraform apply
+#only works on MacOS currently
+
+#defaults
+url="core.harbor.domain"
+mainnet="default"
+subnet="default"
+
+unset name
+#arguments passed in
+while getopts ":hu:k:p:n:" opt; do
+  case ${opt} in
+   h )
+     echo "Usage:
+-u URL that will point to Harbor(no https:// at the beginning; example: core.harbor.domain)
+-k Path to your gcloud service account key
+-p ID of the project to deploy Harbor to
+-n Network and subnetwork on GCP, separated by spaces
+Note: Make sure to run with sudo" 1>&2
+     exit 1
+     ;;
+   u )
+     url=$OPTARG
+     ;;
+   k )
+     gkeypath=$OPTARG 
+     ;;
+   p )
+     gproject=$OPTARG 
+     ;;
+   n )
+     #loops through arguments that aren't prefaced by -, 
+     #then adds them to an array after getopts to be split into the two vars
+     network=("$OPTARG")
+        until [[ $(eval "echo \${$OPTIND}") =~ ^-.* ]] || [ -z $(eval "echo \${$OPTIND}") ]; do
+            network+=($(eval "echo \${$OPTIND}"))
+            OPTIND=$((OPTIND + 1))
+        done
+     ;;
+   \? )
+     echo "Invalid Option: -$OPTARG
+Usage:
+-u URL that will point to Harbor(no https:// at the beginning; example: core.harbor.domain)
+-k Path to your GCP service account key
+-p ID of the GCP project to deploy Harbor to
+-n Network and subnetwork on GCP, separated by spaces
+Note: make sure to run with sudo" 1>&2
+     exit 1
+     ;;
+   : )
+     echo "Invalid option: $OPTARG requires an argument" 1>&2
+     exit 1
+     ;;
+  esac
+done
+shift $((OPTIND -1))
+#array built from -n flag is split into these vars
+mainnet="${network[0]}"
+subnet="${network[1]}"
+
+#quit with no input flags
+if [ $OPTIND -eq 1 ]
+then
+   echo "Error: No arguments passed
+Usage:
+-k Path to your GCP service account key
+-p ID of the GCP project to deploy Harbor to
+-n Network and subnetwork on GCP, separated by spaces
+Note: make sure to run with sudo"
+   exit
+fi
+
+sudo echo "Password saved for other sudo commands"
+
+echo "cluster-name=\"harbor-kube\"
+cluster-size=3
+network="\"${mainnet}\""
+subnet="\"${subnet}\""
+credentials-file="\"${gkeypath}\""
+project="\"${gproject}\""" > states/harbor.tfvars
+
+
+#Dependencies
+brew install terraform 2> errors.txt
+curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
+tar -xzf google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
+yes "" | ./google-cloud-sdk/install.sh
+gcloud auth activate-service-account --key-file=$gkeypath
+gcloud config set project $gproject
+
+terraform init
+yes yes | terraform apply -var-file=states/harbor.tfvars
 
 clustername="$(terraform output | sed 's/cluster-name = //')"
 
@@ -10,34 +100,44 @@ chmod 700 get_helm.sh
 
 gcloud container clusters get-credentials $clustername --zone us-west1-a --project terraform-gcp-harbor
 
+#set up helm
 kubectl create serviceaccount --namespace kube-system tiller
 kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 helm init --service-account tiller --upgrade
 
 sleep 60
 
-helm install --name ingress stable/nginx-ingress
+helm repo add nginx https://helm.nginx.com/stable
+helm install --name ingress nginx/nginx-ingress
 sleep 60
-ip="$(kubectl get svc ingress-nginx-ingress-controller -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
+ip="$(kubectl get svc ingress-nginx-ingress -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
 # put the IP addr into /etc/hosts as core.harbor.domain
 sudo cp /etc/hosts ./hosts-copy
-sudo echo "$ip core.harbor.domain" >> /etc/hosts
+echo "$ip $url" | sudo tee -a /etc/hosts
+
+#set up certificate environment
 helm repo add jetstack https://charts.jetstack.io
 kubectl create namespace cert-manager
 kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
 kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
 kubectl create -f letsencrypt-prod.yaml
+
 helm install --name cert-manager --namespace cert-manager --version v0.8.1 jetstack/cert-manager \
    --set ingressShim.defaultIssuerName=letsencrypt-prod \
    --set ingressShim.defaultIssuerKind=ClusterIssuer
-helm install --name harbor-release harbor/harbor --set nginx.image.tag=v1.8.1 --set portal.image.tag=v1.8.1 \
+
+#start Harbor on the cluster
+helm repo add harbor https://helm.goharbor.io
+helm install --name harbor-release harbor/harbor --set expose.ingress.core=$url --set externalURL=https://$url --set nginx.image.tag=v1.8.1 --set portal.image.tag=v1.8.1 \
   --set core.image.tag=v1.8.1 --set jobservice.image.tag=v1.8.1 --set chartmuseum.image.tag=v0.8.1-v1.8.1 \
   --set clair.image.tag=v2.0.8-v1.8.1 --set notary.server.image.tag=v0.6.1-v1.8.1 --set notary.signer.image.tag=v0.6.1-v1.8.1 \
   --set database.internal.image.tag=v1.8.1 --set redis.internal.image.tag=v1.8.1 --set registry.registry.image.tag=v2.7.1-patch-2819-v1.8.1 \
   --set registry.controller.image.tag=v1.8.1
+
 sleep 180
+
 # access online portal, download cert, and put it into keychain(or possibly the Docker certs.d directory; will be tested)
-curl -k -o ca.crt https://core.harbor.domain/api/systeminfo/getcert
+curl -k -o ca.crt https://$url/api/systeminfo/getcert
 sudo security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain-db ca.crt
 # restart Docker
 killall Docker && open /Applications/Docker.app
@@ -45,6 +145,7 @@ killall Docker && open /Applications/Docker.app
 sleep 60
 
 # login to docker and push a test image
-sudo docker login --username admin --password Harbor12345 core.harbor.domain
-sudo docker tag hello-world:latest core.harbor.domain/library/hello-world:latest
-sudo docker push core.harbor.domain/library/hello-world:latest
+sudo docker pull hello-world
+sudo docker login --username admin --password Harbor12345 $url
+sudo docker tag hello-world:latest $url/library/hello-world:latest
+sudo docker push $url/library/hello-world:latest

@@ -1,6 +1,6 @@
 provider "google" {
     credentials = "${file("${var.credentials-file}")}"
-    project = "terraform-gcp-harbor"
+    project = "${var.project}"
     region = "${var.region}"
     zone = "${var.region}-a"
 }

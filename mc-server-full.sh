@@ -69,9 +69,9 @@ shift $((OPTIND -1))
 
 if [ $modded ]
 then
-  echo "This command will create a Forge-modded version "${version}" world titled '"${worldname}"' with the mod at 
-  "${modpath}" 
-  installed. Continue(y or n)?"
+  echo "This command will create a Forge-modded version "${version}" world titled '"${worldname}"' with the mod at
+"${modpath}" 
+installed. Continue(y or n)?"
   read run
   if [ $run = y ]
   then
@@ -79,6 +79,7 @@ then
 
 
 # ACTUAL RUN SCRIPT FOR MODDED SERVER
+      terraform init
       yes yes | terraform apply -var-file=states/minecraft.tfvars
       clustername="$(terraform output | sed 's/cluster-name = //')"
       gcloud container clusters get-credentials $clustername --zone us-west1-a --project terraform-gcp-harbor
@@ -173,6 +174,7 @@ spec:
     app: java' > ./resources/mc-pod-java.yaml
 
     kubectl apply -f ./resources/mc-pod-java.yaml
+    gcloud compute disks create disk-java --zone us-west1-a 2> errors.txt
     kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
     sleep 180
@@ -195,7 +197,7 @@ Server IP Address: "
 else 
   if [ $ftb ]
   then 
-    echo "This command will create a FeedTheBeast version "${version}" world titled '"${worldname}"' with the modpack at 
+    echo "This command will create a FeedTheBeast version "${version}" world titled '"${worldname}"' with the modpack at
 "${modpack}" 
 installed. Continue(y or n)?"
     read run
@@ -206,7 +208,9 @@ installed. Continue(y or n)?"
 
 # ACTUAL RUN SCRIPT FOR FTB SERVER
     yes yes | terraform apply -var-file=states/minecraft.tfvars
-    clustername="$(terraform output | sed 's/cluster-name = //')"
+    ######CHANGEME
+    clustername=minecraft-server
+    ######"$(terraform output | sed 's/cluster-name = //')"
     gcloud container clusters get-credentials $clustername --zone us-west1-a --project terraform-gcp-harbor
 
     echo -e "op-permission-level=4
@@ -296,6 +300,7 @@ spec:
     app: java' > ./resources/mc-pod-java.yaml
 
     kubectl apply -f ./resources/mc-pod-java.yaml
+    gcloud compute disks create disk-java --zone us-west1-a 2> errors.txt
     kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
     sleep 330
@@ -415,6 +420,7 @@ spec:
     app: java' > ./resources/mc-pod-java.yaml
 
       kubectl apply -f ./resources/mc-pod-java.yaml
+      gcloud compute disks create disk-java --zone us-west1-a 2> errors.txt
       kubectl apply -f ./resources/pvc-java-with-pv.yaml
 
       sleep 150

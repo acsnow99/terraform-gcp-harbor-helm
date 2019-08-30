@@ -20,3 +20,7 @@ variable "subnet" {
 variable "credentials-file" {
     default = "~/terraform/terraform_keys/terraform-gcp-harbor-80a453b96ca7.json"
 }
+
+variable "project" {
+    default = "terraform-gcp-harbor"
+}
