@@ -5,3 +5,4 @@ auto-cluster-snippet.sh
 examples
 *.json
 google-cloud-sdk*
+errors.txt
