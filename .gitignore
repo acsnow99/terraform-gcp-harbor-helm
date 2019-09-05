@@ -6,3 +6,4 @@ examples
 *.json
 google-cloud-sdk*
 errors.txt
+*.crt

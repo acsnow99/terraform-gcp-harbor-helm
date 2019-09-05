@@ -8,7 +8,7 @@ spec:
   volumes:
     - name: mc-world-storage-java
       persistentVolumeClaim:
-       claimName: mc-claim-java
+        claimName: mc-claim-java
   containers:
     - name: mc-server-container-java
       image: itzg/minecraft-server
@@ -23,10 +23,6 @@ spec:
         value: "true"
       - name: VERSION 
         value: "1.12.2"
-      - name: TYPE
-        value: "FTB"
-      - name: FTB_SERVER_MOD
-        value: https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320/download
 
 ---
 

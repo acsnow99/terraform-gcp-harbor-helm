@@ -6,19 +6,23 @@
 url="core.harbor.domain"
 mainnet="default"
 subnet="default"
+clustername="harbor-kube"
 
 unset name
 #arguments passed in
-while getopts ":hu:k:p:n:" opt; do
+while getopts ":hc:u:k:p:n:" opt; do
   case ${opt} in
    h )
      echo "Usage:
+-c Name for the cluster
 -u URL that will point to Harbor(no https:// at the beginning; example: core.harbor.domain)
 -k Path to your gcloud service account key
 -p ID of the project to deploy Harbor to
--n Network and subnetwork on GCP, separated by spaces
-Note: Make sure to run with sudo" 1>&2
+-n Network and subnetwork on GCP, separated by spaces" 1>&2
      exit 1
+     ;;
+   c )
+     clustername=$OPTARG
      ;;
    u )
      url=$OPTARG
@@ -41,11 +45,11 @@ Note: Make sure to run with sudo" 1>&2
    \? )
      echo "Invalid Option: -$OPTARG
 Usage:
+-c Name for the cluster
 -u URL that will point to Harbor(no https:// at the beginning; example: core.harbor.domain)
 -k Path to your GCP service account key
 -p ID of the GCP project to deploy Harbor to
--n Network and subnetwork on GCP, separated by spaces
-Note: make sure to run with sudo" 1>&2
+-n Network and subnetwork on GCP, separated by spaces" 1>&2
      exit 1
      ;;
    : )
@@ -64,16 +68,15 @@ if [ $OPTIND -eq 1 ]
 then
    echo "Error: No arguments passed
 Usage:
+-c Name for the cluster
+-u URL that will point to Harbor(no https:// at the beginning; example: core.harbor.domain)
 -k Path to your GCP service account key
 -p ID of the GCP project to deploy Harbor to
--n Network and subnetwork on GCP, separated by spaces
-Note: make sure to run with sudo"
+-n Network and subnetwork on GCP, separated by spaces"
    exit
 fi
 
-sudo echo "Password saved for other sudo commands"
-
-echo "cluster-name=\"harbor-kube\"
+echo "cluster-name="\"${clustername}\""
 cluster-size=3
 network="\"${mainnet}\""
 subnet="\"${subnet}\""
@@ -81,24 +84,29 @@ credentials-file="\"${gkeypath}\""
 project="\"${gproject}\""" > states/harbor.tfvars
 
 
+
+
 #Dependencies
 brew install terraform 2> errors.txt
-curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
-tar -xzf google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
-yes "" | ./google-cloud-sdk/install.sh
-gcloud auth activate-service-account --key-file=$gkeypath
+#curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
+#tar -xzf google-cloud-sdk-260.0.0-darwin-x86_64.tar.gz
+#yes "" | ./google-cloud-sdk/install.sh
+#gcloud auth activate-service-account --key-file=$gkeypath
 gcloud config set project $gproject
+
+curl -LO https://git.io/get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+
 
 terraform init
 yes yes | terraform apply -var-file=states/harbor.tfvars
 
 clustername="$(terraform output | sed 's/cluster-name = //')"
 
-curl -LO https://git.io/get_helm.sh
-chmod 700 get_helm.sh
-./get_helm.sh
 
-gcloud container clusters get-credentials $clustername --zone us-west1-a --project terraform-gcp-harbor
+
+gcloud container clusters get-credentials $clustername --zone us-west1-a --project $gproject
 
 #set up helm
 kubectl create serviceaccount --namespace kube-system tiller
