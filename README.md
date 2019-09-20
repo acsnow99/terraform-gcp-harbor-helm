@@ -1,14 +1,16 @@
-Scripts and various resources for setup of two different Kubernetes environments: 
-one for Harbor Docker image registry, and one for Minecraft servers.
+Scripts and various resources for setup of Harbor Docker image registry
 
-The main automated script for a Harbor registry is auto-cluster-2.sh
-The main automated script for a Minecraft server is mc-server-full.sh
+The main automated script for a Harbor registry is auto-cluster-4.sh
 
-These can both be passed several flags to customize the resulting Kubernetes resources
-Run either script with -h to see the options
+It can be passed several flags to customize the resulting Kubernetes resources
+Run the script with -h to see the options
 
 Dependencies:
+
 -Google Cloud SDK
+
 -Terraform
+
 -A Google Cloud Platform project and service account key with access to it
+
 -Helm
