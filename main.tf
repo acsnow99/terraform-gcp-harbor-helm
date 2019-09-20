@@ -36,3 +36,23 @@ resource "google_container_node_pool" "harbor_nodes" {
     ]
   }
 }
+
+
+
+data "template_file" "deploy" {
+    template = "${file("${var.provision-file}")}"
+    
+    vars = {
+        clustername = "${var.cluster-name}"
+        gproject = "${var.project}"
+        url = "${var.url}"
+    }
+}
+
+resource "null_resource" "harbor-setup" {
+  depends_on = [google_container_node_pool.harbor_nodes]
+  
+  provisioner "local-exec" {
+    command = "echo '${data.template_file.deploy.rendered}' > ./auto-cluster-provisioned.sh && bash ./auto-cluster-provisioned.sh && rm ./auto-cluster-provisioned.sh"
+  }
+}

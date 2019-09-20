@@ -24,3 +24,13 @@ variable "credentials-file" {
 variable "project" {
     default = "terraform-gcp-harbor"
 }
+
+variable "url" {
+    default = "core.harbor.domain"
+    description = "URL for Harbor"
+}
+
+variable "provision-file" {
+    default = "./auto-cluster-from-terraform.sh"
+    description = "Script run after cluster creates to set up the Harbor instance"
+}

@@ -1,9 +1,7 @@
 Scripts and various resources for setup of Harbor Docker image registry
 
-The main automated script for a Harbor registry is auto-cluster-4.sh
-
-It can be passed several flags to customize the resulting Kubernetes resources
-Run the script with -h to see the options
+Copy and edit states/harbor.tfvars to fit your preferred configuration, then run
+terraform apply -var-file=states/<your tfstate file>
 
 Dependencies:
 
