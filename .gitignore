@@ -7,3 +7,5 @@ examples
 google-cloud-sdk*
 errors.txt
 *.crt
+get_helm.sh
+*test*

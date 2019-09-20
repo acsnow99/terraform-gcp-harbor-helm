@@ -118,17 +118,6 @@ ip="$(kubectl get svc ingress-nginx-ingress -o jsonpath="{.status.loadBalancer.i
 sudo cp /etc/hosts ./hosts-copy
 echo "$ip $url" | sudo tee -a /etc/hosts
 
-#set up certificate environment
-helm repo add jetstack https://charts.jetstack.io
-kubectl create namespace cert-manager
-kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
-kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
-kubectl create -f letsencrypt-prod.yaml
-
-helm install --name cert-manager --namespace cert-manager --version v0.8.1 jetstack/cert-manager \
-   --set ingressShim.defaultIssuerName=letsencrypt-prod \
-   --set ingressShim.defaultIssuerKind=ClusterIssuer
-
 #start Harbor on the cluster
 helm repo add harbor https://helm.goharbor.io
 helm install --name harbor-release harbor/harbor --set expose.ingress.hosts.core=$url --set externalURL=https://$url
