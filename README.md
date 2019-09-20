@@ -1,7 +1,7 @@
 Scripts and various resources for setup of Harbor Docker image registry
 
 Copy and edit states/harbor.tfvars to fit your preferred configuration, then run
-terraform apply -var-file=states/<your tfstate file>
+terraform apply -var-file=states/{your tfstate file}
 
 Dependencies:
 
