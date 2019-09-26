@@ -31,9 +31,11 @@ sleep 180
 
 # access online portal, download cert, and put it into keychain(or possibly the Docker certs.d directory; will be tested)
 curl -k -o ca.crt https://${url}/api/systeminfo/getcert
-sudo security add-trusted-cert -d -r trustRoot -k ~/Library/Keychains/login.keychain-db ca.crt
+sudo mkdir /etc/docker/certs.d
+sudo mkdir /etc/docker/certs.d/core.harbor.domain
+sudo mv ca.crt /etc/docker/certs.d/core.harbor.domain/ca.crt
 # restart Docker
-killall Docker && open /Applications/Docker.app
+killall docker && sudo systemctl start docker
 
 sleep 60
 

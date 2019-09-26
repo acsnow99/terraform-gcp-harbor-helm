@@ -28,7 +28,7 @@ resource "google_container_node_pool" "harbor_nodes" {
 
   node_config {
     preemptible  = true
-    machine_type = "n1-standard-1"
+    machine_type = "n1-standard-2"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
@@ -46,12 +46,13 @@ data "template_file" "deploy" {
         clustername = "${var.cluster-name}"
         gproject = "${var.project}"
         url = "${var.url}"
+        ingress-ip = "${var.ingress-ip}"
     }
 }
 
 resource "null_resource" "harbor-setup" {
   depends_on = [google_container_node_pool.harbor_nodes]
-  
+
   provisioner "local-exec" {
     command = "echo '${data.template_file.deploy.rendered}' > ./auto-cluster-provisioned.sh && bash ./auto-cluster-provisioned.sh && rm ./auto-cluster-provisioned.sh"
   }

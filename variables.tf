@@ -29,6 +29,9 @@ variable "url" {
     default = "core.harbor.domain"
     description = "URL for Harbor"
 }
+variable "ingress-ip" {
+    description = "Static IP for the Ingress controller"
+}
 
 variable "provision-file" {
     default = "./auto-cluster-from-terraform.sh"

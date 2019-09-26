@@ -1,1 +1,0 @@
-cluster-name = "harbor-kube-2"

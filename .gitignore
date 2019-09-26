@@ -9,3 +9,5 @@ errors.txt
 *.crt
 get_helm.sh
 *test*
+.vscode
+*provisioned*
